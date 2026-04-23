@@ -9,19 +9,9 @@ import json
 import logging
 import time
 
-SERVERHOST="0.0.0.0"
-SERVERPORT=8001
-#### CLI Wrapper
-def _exec(bashCommand,getstderr=False):
-        """
-        Exec command and return output
-        """
-        process = subprocess.Popen(bashCommand, stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True)
-        output, error = process.communicate()
-        if getstderr:
-                return [output.decode(),error.decode(),process.returncode]
-        else:
-                return output.decode()
+SERVERHOST = "0.0.0.0"
+SERVERPORT = 8001
+
 
 #### Hostname resolution
         """ 
