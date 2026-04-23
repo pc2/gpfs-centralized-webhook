@@ -83,8 +83,11 @@ def handle_restoreconfig():
     Handles checks and executing mmsdrrestore
     """
     client_ip = request.remote_addr
-    logging.info(f"Request from {client_ip}")
+    logging.info(f"Restoreconfig request from {client_ip}")
     hostname = get_hostname_from_ip(str(client_ip))
+    if not hostname:
+        logging.critical(f"{client_ip} not resolved. This shouldn't happen!!")
+        return "Hostname not resolved", 424
     logging.debug(f"{client_ip} resolved to {hostname}")
 
     if check_if_node_in_cluster(hostname):
