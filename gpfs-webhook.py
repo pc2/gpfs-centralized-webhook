@@ -77,10 +77,6 @@ def restoreconfig(host: str) -> bool:
 #### HTTP Server
 app = Flask(__name__)
 
-logger = logging.getLogger()
-gunicorn_logger = logging.getLogger("gunicorn.error")
-logger.handlers = gunicorn_logger.handlers
-logger.setLevel(logging.DEBUG)
 
 @app.route("/restoreconfig", methods=["GET"])
 def handle_restoreconfig():
@@ -113,6 +109,14 @@ def handle_restoreconfig():
 
 
 if __name__ == "__main__":
+    logger = logging.getLogger()
+    logging.basicConfig(format="%(asctime)s %(levelname)-8s %(message)s", datefmt="%d.%m.%Y %H:%M:%S", level=logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
+    logging.info("App running with development Server, using console logger and logging everything .")
     app.run(host=SERVERHOST, port=SERVERPORT)
-
-
+elif __name__ == "gpfs-webhook":
+    logger = logging.getLogger()
+    gunicorn_logger = logging.getLogger("gunicorn.error")
+    logger.handlers = gunicorn_logger.handlers
+    logger.setLevel(logging.INFO)
+    logging.info("App running with Gunicorn, using Gunicorn Logger.")
