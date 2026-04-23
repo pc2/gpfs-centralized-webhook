@@ -8,6 +8,7 @@ import requests
 import json
 import logging
 import time
+from random import randint
 
 SERVERHOST = "0.0.0.0"
 SERVERPORT = 8001
@@ -91,7 +92,10 @@ def handle_restoreconfig():
     logging.debug(f"{client_ip} resolved to {hostname}")
 
     if check_if_node_in_cluster(hostname):
-        logging.debug(f"{hostname} is part of the GPFS-Cluster. Starting mmsdrrestore.")
+        logging.debug(
+            f"{hostname} is part of the GPFS-Cluster. Starting mmsdrrestore after short sleep."
+        )
+        time.sleep(randint(1, 5))
         if restoreconfig(hostname):
             logging.debug(f"mmsdrrestore for {hostname} suceeded")
             return "Done", 200
@@ -103,9 +107,19 @@ def handle_restoreconfig():
             time.sleep(5)
             # Restore again
             if not restoreconfig(hostname):
-                # Restore failed the second time, call quits.
-                logging.critical(f"mmsdrrestore for {hostname} failed!! Calling quits. Check node and GPFS.")
-                return "Failure restoring", 503
+                # Restore failed the second time, try one last time.
+                logging.error(
+                    f"mmsdrrestore for {hostname} failed the second time!! Trying again in 5 seconds."
+                )
+                time.sleep(5)
+                if not restoreconfig(hostname):
+                    # Restore failed the second time, call quits.
+                    logging.critical(
+                        f"mmsdrrestore for {hostname} failed three times!! Calling quits. Check node and GPFS."
+                    )
+                    return "Failure restoring", 503
+                else:
+                    return "Done, third try.", 200
             else:
                 return "Done, second try.", 200
     else:
@@ -117,9 +131,15 @@ def handle_restoreconfig():
 
 if __name__ == "__main__":
     logger = logging.getLogger()
-    logging.basicConfig(format="%(asctime)s %(levelname)-8s %(message)s", datefmt="%d.%m.%Y %H:%M:%S", level=logging.DEBUG)
+    logging.basicConfig(
+        format="%(asctime)s %(levelname)-8s %(message)s",
+        datefmt="%d.%m.%Y %H:%M:%S",
+        level=logging.DEBUG,
+    )
     logger.setLevel(logging.DEBUG)
-    logging.info("App running with development Server, using console logger and logging everything .")
+    logging.info(
+        "App running with development Server, using console logger and logging everything ."
+    )
     app.run(host=SERVERHOST, port=SERVERPORT)
 elif __name__ == "gpfs-webhook":
     logger = logging.getLogger()
