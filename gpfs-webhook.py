@@ -13,7 +13,6 @@ SERVERHOST = "0.0.0.0"
 SERVERPORT = 8001
 
 
-#### Hostname resolution
 def get_hostname_from_ip(ip_address: str) -> str:
     """
     Gets hostname for a given IP from /etc/hosts and returns hostname or none
@@ -94,12 +93,15 @@ def handle_restoreconfig():
             logging.debug(f"mmsdrrestore for {hostname} suceeded")
             return "Done", 200
         else:
+            # Restore can fail on the first try, try again in a few seconds
             logging.error(
                 f"mmsdrrestore for {hostname} failed!! Trying again in 5 seconds."
             )
             time.sleep(5)
-            if restoreconfig(hostname):
-                logging.error(f"mmsdrrestore for {hostname} failed!! Check node.")
+            # Restore again
+            if not restoreconfig(hostname):
+                # Restore failed the second time, call quits.
+                logging.critical(f"mmsdrrestore for {hostname} failed!! Calling quits. Check node and GPFS.")
                 return "Failure restoring", 503
     else:
         logging.error(
