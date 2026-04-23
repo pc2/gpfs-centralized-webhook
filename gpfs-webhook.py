@@ -106,6 +106,8 @@ def handle_restoreconfig():
                 # Restore failed the second time, call quits.
                 logging.critical(f"mmsdrrestore for {hostname} failed!! Calling quits. Check node and GPFS.")
                 return "Failure restoring", 503
+            else:
+                return "Done, second try.", 200
     else:
         logging.error(
             f"{hostname} is not part of the GPFS-Cluster. Either the node is new or something is wrong"
